@@ -4,6 +4,7 @@ import pandas as pd
 from telebot import types
 import json
 import requests
+
 bot = telebot.TeleBot('6669067736:AAFld0-siHEvSVl8P3bhbHxh_GUPhV-uLVU')
 
 #data = pd.read_csv('/Users/grigorij/Downloads/digital_currency_list.csv')
