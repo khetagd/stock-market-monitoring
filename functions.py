@@ -47,3 +47,4 @@ def GetStockInfo(message):
             return curr_output, rate_output
         except:
             return -1, -1
+        
