@@ -23,7 +23,8 @@ def main(message):
     bot.register_next_step_handler(message, save_stock)
 
 def save_stock(message):
-    functions.SaveStock(message, bot, users_data)
+    functions.SaveStock(message, users_data)
+    bot.send_message(message.chat.id, f'{message.text} теперь в избранном.')
 
 @bot.message_handler(commands=['stock_info'])
 def main(message):
@@ -31,6 +32,10 @@ def main(message):
     bot.register_next_step_handler(message, get_stock_info)
 
 def get_stock_info(message):
-    functions.GetStockInfo(message, bot)
+    curr_output, rate_output = functions.GetStockInfo(message)
+    if curr_output != -1:
+        bot.send_message(message.chat.id, f'Курс {curr_output} к доллару: {rate_output}')
+    else:
+        bot.send_message(message.chat.id, 'Что-то пошло не так :(')
 
 bot.polling(none_stop=True)
