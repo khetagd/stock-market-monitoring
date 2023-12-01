@@ -1,6 +1,9 @@
 import pandas as pd
 import requests
 
+APIs = ['4JN9ZD24ZTMKWX5R', 'BHM7WHDX7K66ET61', '8OKWRXIXB7VBMGAP', 'ZG7VF29SB1BSCTVF', 'D9SOYTBRK9ULOSNP']
+curr_api_id = 0
+
 def SaveStock(message, data):
     try:
         data[str(message.chat.id)].append(message.text)
@@ -11,9 +14,7 @@ def SaveStock(message, data):
     
 
 def GetStockInfo(message):
-    APIs = ['4JN9ZD24ZTMKWX5R', 'BHM7WHDX7K66ET61', '8OKWRXIXB7VBMGAP', 'ZG7VF29SB1BSCTVF', 'D9SOYTBRK9ULOSNP']
     currency = message.text.strip()
-    curr_api_id = 0
     try:
         url = f'https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency={currency}&to_currency=USD&apikey={APIs[curr_api_id]}'
         res = requests.get(url)
@@ -48,3 +49,23 @@ def GetStockInfo(message):
         except:
             return -1, -1
         
+def GetHistoricalData(message):
+    currency = message.text.strip()
+    url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={currency}&apikey={APIs[curr_api_id]}&outputsize=full'
+    r = requests.get(url)
+    data = r.json()
+
+    try:
+        test = data['Information']
+        curr_api_id += 1
+        url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={currency}&apikey={APIs[curr_api_id]}&outputsize=full'
+        res = requests.get(url)
+        data = res.json()
+    except:
+        pass
+
+    data = dict(data['Time Series (Daily)'])
+    data = pd.DataFrame().from_dict(data, orient='index')
+    
+    return data
+
