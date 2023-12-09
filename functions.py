@@ -15,6 +15,7 @@ def SaveStock(message, data):
 
 def GetStockInfo(message):
     currency = message.text.strip()
+    global curr_api_id
     try:
         url = f'https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency={currency}&to_currency=USD&apikey={APIs[curr_api_id]}'
         res = requests.get(url)
@@ -27,8 +28,9 @@ def GetStockInfo(message):
             data = res.json()
         except:
             pass
-        curr_output = data["Realtime Currency Exchange Rate"]["4. To_Currency Name"]
+        curr_output = data["Realtime Currency Exchange Rate"]["1. From_Currency Code"]
         rate_output = data["Realtime Currency Exchange Rate"]["5. Exchange Rate"]
+        print(data)
         return curr_output, rate_output
     except:
         try:
@@ -48,6 +50,7 @@ def GetStockInfo(message):
             return curr_output, rate_output
         except:
             return -1, -1
+    
         
 def GetHistoricalData(message):
     currency = message.text.strip()

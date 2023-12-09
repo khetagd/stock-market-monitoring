@@ -19,7 +19,7 @@ def main(message):
 
 @bot.message_handler(commands=['save_stock'])
 def main(message):
-    bot.send_message(message.chat.id, 'Введите название валюты.')
+    bot.send_message(message.chat.id, 'Введите тикер акции/криптовалюты.')
     bot.register_next_step_handler(message, save_stock)
 
 def save_stock(message):
@@ -28,7 +28,7 @@ def save_stock(message):
 
 @bot.message_handler(commands=['stock_info'])
 def main(message):
-    bot.send_message(message.chat.id, 'Напишите название интересующей вас валюты.')
+    bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции/криптовалюты.')
     bot.register_next_step_handler(message, get_stock_info)
 
 def get_stock_info(message):
