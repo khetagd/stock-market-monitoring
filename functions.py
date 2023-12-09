@@ -1,27 +1,29 @@
 import pandas as pd
 import requests
 
-APIs = ['4JN9ZD24ZTMKWX5R', 'BHM7WHDX7K66ET61', '8OKWRXIXB7VBMGAP', 'ZG7VF29SB1BSCTVF', 'D9SOYTBRK9ULOSNP']
+APIs = ['4JN9ZD24ZTMKWX5R', 'BHM7WHDX7K66ET61', '8OKWRXIXB7VBMGAP', 'ZG7VF29SB1BSCTVF',
+        'D9SOYTBRK9ULOSNP']  # список токенов для подключения к API
 curr_api_id = 0
 
-def SaveStock(message, data):
+
+def SaveStock(message, data):  # сохраняем выбор акций, которые отслеживает пользователь
     try:
-        data[str(message.chat.id)].append(message.text)
+        data[str(message.chat.id)].append(message.text)  # добавляем акцию к существующему пользователю
     except:
-        data[str(message.chat.id)] = [message.text]
+        data[str(message.chat.id)] = [message.text]  # если пользователь не найден
     df = pd.DataFrame(data)
     df.to_excel('/Users/khetag/Desktop/users_data.xlsx')
-    
 
-def GetStockInfo(message):
-    currency = message.text.strip()
+
+def GetStockInfo(message):  # запрашиваем базовую информацию о ценной бумаге
+    currency = message.text.strip()  # currency - название акции
     global curr_api_id
     try:
-        url = f'https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency={currency}&to_currency=USD&apikey={APIs[curr_api_id]}'
-        res = requests.get(url)
+        url = f'https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency={currency}&to_currency=USD&apikey={APIs[curr_api_id]} '
+        res = requests.get(url)  # запрос к api
         data = res.json()
         try:
-            test = data['Information']
+            test = data['Information']  # второй запрос к api, на случай если токен исчерпал лимит
             curr_api_id += 1
             url = f'https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency={currency}&to_currency=USD&apikey={APIs[curr_api_id]}'
             res = requests.get(url)
@@ -50,10 +52,10 @@ def GetStockInfo(message):
             return curr_output, rate_output
         except:
             return -1, -1
-    
-        
-def GetHistoricalData(message):
-    currency = message.text.strip()
+
+
+def GetHistoricalData(message):  # получение исторических значений акций
+    currency = message.text.strip()  # currency - название акции
     url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={currency}&apikey={APIs[curr_api_id]}&outputsize=full'
     r = requests.get(url)
     data = r.json()
@@ -68,7 +70,11 @@ def GetHistoricalData(message):
         pass
 
     data = dict(data['Time Series (Daily)'])
-    data = pd.DataFrame().from_dict(data, orient='index')
-    
+    data = pd.DataFrame().from_dict(data, orient='index')  # преобразуем данные из json в pandas
+
     return data
 
+
+def GetMonthlyData(message):  # получение месячных данных по акции
+    data = GetHistoricalData(message).iloc[0:30]
+    return data
