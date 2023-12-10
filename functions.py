@@ -6,7 +6,7 @@ from io import BytesIO
 
 APIs = ['4JN9ZD24ZTMKWX5R', 'BHM7WHDX7K66ET61', '8OKWRXIXB7VBMGAP', 'ZG7VF29SB1BSCTVF',
         'D9SOYTBRK9ULOSNP']  # список токенов для подключения к API
-curr_api_id = 0
+curr_api_id = 0 # индекс токена, который используется в настоящий момент
 
 
 def SaveStock(message, data):  # сохраняем выбор акций, которые отслеживает пользователь
@@ -108,7 +108,7 @@ def GetSMAData(message):  # получение скользящей средне
 def GetForecast(message):
     data = GetHistoricalData(message)
     ar, pr = data_analyze.GetModels(data)
-    #это то что предсказали модели выведи это пользователю с каким-нибдуь комментарием(это предсказание через год)
+    return ar, pr
 
 def GetSMAGraph(message):
     interval = message.text.strip().split()[1]

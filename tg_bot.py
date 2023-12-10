@@ -14,7 +14,7 @@ users_data = {}
 
 @bot.message_handler(commands=['start'])
 def main(message):
-    bot.send_message(message.chat.id, f'Здравствуйте, {message.from_user.first_name}! Список доступных команд: \n\n/stock_price — получить информацию о стоимости валюты/акции/криптовалюты в долларах \n/save_stock — добавить валюту/акцию/криптовалюту в избранное')
+    bot.send_message(message.chat.id, f'Здравствуйте, {message.from_user.first_name}! Список доступных команд: \n\n/stock_price — получить информацию о стоимости валюты/акции/криптовалюты в долларах \n\n/save_stock — добавить валюту/акцию/криптовалюту в избранное \n\n/get_sma — получить графическое представление SMA выбранной акции\n\n/forecast — получить предсказание процентного изменения стоимости выбранной акции')
 
 @bot.message_handler(commands=['save_stock'])
 def main(message):
@@ -39,7 +39,7 @@ def get_stock_info(message):
 
 @bot.message_handler(commands=['get_sma'])
 def main(message):
-    bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции/криптовалюты.')
+    bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции/криптовалюты и выберите интервал (1min, daily).')
     bot.register_next_step_handler(message, get_sma_graph)
 
 def get_sma_graph(message):
@@ -52,7 +52,8 @@ def main(message):
     bot.register_next_step_handler(message, get_forecast)
 
 def get_forecast(message):
+    bot.send_message(message.chat.id, 'Пожалуйста, ожидайте, время анализа может доходить до нескольких минут.')
     res_arima, res_prophet = functions.GetForecast(message)
-    bot.send_message(message.chat.id, f'{res_arima} — arima \n {res_prophet} — prophet')
+    bot.send_message(message.chat.id, f'Процентное изменение, предсказанное моделью ARIMA: {res_arima}\n\nПроцентное изменение, предсказанное моделью Prophet: {res_prophet}')
 
 bot.polling(none_stop=True)
