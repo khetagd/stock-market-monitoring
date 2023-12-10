@@ -1,5 +1,7 @@
 import pandas as pd
 import requests
+import data_analyze
+import matplotlib.pyplot as plt
 
 APIs = ['4JN9ZD24ZTMKWX5R', 'BHM7WHDX7K66ET61', '8OKWRXIXB7VBMGAP', 'ZG7VF29SB1BSCTVF',
         'D9SOYTBRK9ULOSNP']  # список токенов для подключения к API
@@ -78,3 +80,38 @@ def GetHistoricalData(message):  # получение исторических �
 def GetMonthlyData(message):  # получение месячных данных по акции
     data = GetHistoricalData(message).iloc[0:30]
     return data
+
+
+def GetSMAData(message, interval):  # получение скользящей средней для акции с заданным интервалом: 1min, 5min, 15min, 30min, 60min, daily, weekly, monthly
+    currency = message.text.strip()  # currency - название акции
+    url = f'https://www.alphavantage.co/query?function=SMA&symbol={currency}&interval={interval}&time_period=10&series_type=open&apikey={APIs[curr_api_id]}'
+    r = requests.get(url)
+    data = r.json()
+
+    try:
+        test = data['Information']
+        curr_api_id += 1
+        url = f'https://www.alphavantage.co/query?function=SMA&symbol={currency}&interval={interval}&time_period=10&series_type=open&apikey={APIs[curr_api_id]}'
+        res = requests.get(url)
+        data = res.json()
+    except:
+        pass
+
+    data = dict(data['Technical Analysis: SMA'])
+    data = pd.DataFrame().from_dict(data, orient='index')  # преобразуем данные из json в pandas
+
+    return data
+
+def GetForecast(message):
+    data = GetHistoricalData(message)
+    ar, pr = data_analyze.GetModels(data)
+    #это то что предсказали модели выведи это пользователю с каким-нибдуь комментарием(это предсказание через год)
+
+def GetSMAGraph(message, interval):
+    data = GetSMAData(message, interval)
+    if interval == 'daily':
+        fig = data_analyze.SMAGraphMonth(data, message.text.strip())
+    else:
+        fig = data_analyze.SMAGraph24Hours(data, message.text.strip())
+    # plt.savefig() вот тут ты должен сохранить где-то этот график и выдать пользователю потом
+
