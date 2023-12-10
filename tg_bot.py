@@ -14,8 +14,7 @@ users_data = {}
 
 @bot.message_handler(commands=['start'])
 def main(message):
-    bot.send_message(message.chat.id, f'Здравствуйте, {message.from_user.first_name}! Список доступных команд:')
-    bot.send_message(message.chat.id, '/stock_info — получить информацию о стоимости валюты/акции/криптовалюты в долларах \n/save_stock — добавить валюту/акцию/криптовалюту в избранное')
+    bot.send_message(message.chat.id, f'Здравствуйте, {message.from_user.first_name}! Список доступных команд: \n\n/stock_price — получить информацию о стоимости валюты/акции/криптовалюты в долларах \n/save_stock — добавить валюту/акцию/криптовалюту в избранное')
 
 @bot.message_handler(commands=['save_stock'])
 def main(message):
@@ -26,7 +25,7 @@ def save_stock(message):
     functions.SaveStock(message, users_data)
     bot.send_message(message.chat.id, f'{message.text} теперь в избранном.')
 
-@bot.message_handler(commands=['stock_info'])
+@bot.message_handler(commands=['stock_price'])
 def main(message):
     bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции/криптовалюты.')
     bot.register_next_step_handler(message, get_stock_info)
@@ -37,5 +36,23 @@ def get_stock_info(message):
         bot.send_message(message.chat.id, f'Курс {curr_output} к доллару: {rate_output}')
     else:
         bot.send_message(message.chat.id, 'Что-то пошло не так :(')
+
+@bot.message_handler(commands=['get_sma'])
+def main(message):
+    bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции/криптовалюты.')
+    bot.register_next_step_handler(message, get_sma_graph)
+
+def get_sma_graph(message):
+    data = functions.GetSMAGraph(message)
+    bot.send_photo(message.chat.id, photo=data)
+
+@bot.message_handler(commands=['forecast'])
+def main(message):
+    bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции/криптовалюты.')
+    bot.register_next_step_handler(message, get_forecast)
+
+def get_forecast(message):
+    res_arima, res_prophet = functions.GetForecast(message)
+    bot.send_message(message.chat.id, f'{res_arima} — arima \n {res_prophet} — prophet')
 
 bot.polling(none_stop=True)

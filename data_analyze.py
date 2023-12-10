@@ -3,7 +3,7 @@ import datetime
 import pandas as pd
 from sktime.forecasting import arima # для работы arima надо установить библиотеку pdmarima
 import logging 
-import talib
+#import talib
 import matplotlib.pyplot as plt 
 import seaborn as sns
 
@@ -76,7 +76,7 @@ def SMAGraph24Hours(sma_data, stock_name): #строим график плава
     sma_data = sma_data.iloc[-60*24:]
     fig = plt.figure(figsize=(10, 5)) #создаем график
     sns.lineplot(data = sma_data, x = 'date', y = 'SMA')
-    plt.title(stock_name)
+    plt.title(f'{stock_name} SMA')
     return fig
 
 
@@ -87,6 +87,6 @@ def SMAGraphMonth(sma_data, stock_name): #строим график плаваю
     sma_data = sma_data.iloc[-30:]
     fig = plt.figure(figsize=(10, 5)) #создаем график
     sns.lineplot(data = sma_data, x = 'date', y = 'SMA')
-    plt.title(stock_name)
+    plt.title(f'{stock_name} SMA')
     return fig
 
