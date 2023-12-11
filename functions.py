@@ -113,9 +113,12 @@ def GetSMAData(message):  # получение скользящей средне
     return data
 
 def GetForecast(message): # возвращает предсказания, построенные моделями ARIMA и Prophet
-    data = GetHistoricalData(message)
-    ar, pr = data_analyze.GetModels(data)
-    return ar, pr
+    try:
+        data = GetHistoricalData(message)
+        ar, pr = data_analyze.GetModels(data)
+        return ar, pr
+    except:
+        return -1, -1
 
 def GetSMAGraph(message): # возвращает график для SMA выбранной акции
     try:
