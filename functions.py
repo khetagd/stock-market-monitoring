@@ -84,6 +84,11 @@ def GetMonthlyData(message):  # получение месячных данных
     return data
 
 
+def GetYearData(message):  # получение годовых данных по акции
+    data = GetHistoricalData(message).iloc[0:365]
+    return data
+
+
 def GetSMAData(message):  # получение скользящей средней для акции с заданным интервалом: 1min, 5min, 15min, 30min, 60min, daily, weekly, monthly
     currency = message.text.strip().split()[0]  # currency - название акции
     interval = message.text.strip().split()[1]
@@ -123,4 +128,12 @@ def GetSMAGraph(message):
     buffer.seek(0)
 
     return buffer
+
+
+def GetMorningEveningStars(message):
+    data = GetYearData(message)
+    prework_data = data_analyze.DataPreWork(data)
+    mornings = data_analyze.MorningStar(prework_data)
+    evenings = data_analyze.EveningStar(prework_data)
+    return mornings, evenings
 

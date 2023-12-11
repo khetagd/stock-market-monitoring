@@ -3,7 +3,7 @@ import datetime
 import pandas as pd
 from sktime.forecasting import arima # для работы arima надо установить библиотеку pdmarima
 import logging 
-#import talib
+from talib import abstract
 import matplotlib.pyplot as plt 
 import seaborn as sns
 
@@ -65,7 +65,7 @@ def GetModels(data): #функция которая запускает обе м
     prophet_data = ProphetModel(prework_data) 
     arima_data = ArimaModel(prework_data)
     arima_result = (arima_data.iloc[-1].y - today_value)/today_value #относительное изменение стоимости (arima)
-    prophet_result = (prophet_data.iloc[-1].y - today_value)/today_value #относительное изменение стоимости (prophet)
+    prophet_result = (prophet_data.iloc[-1].y - today_value)/today_value #относительное изменение стоимости (prophet)'
     return 100*arima_result, 100*prophet_result
 
 
@@ -89,4 +89,24 @@ def SMAGraphMonth(sma_data, stock_name): #строим график плаваю
     sns.lineplot(data = sma_data, x = 'date', y = 'SMA')
     plt.title(f'{stock_name} SMA')
     return fig
+
+
+def MorningStar(data): #ищем для пользователя фигуры утренние звезды (трейдинг)
+    new_data = data[::-1].reset_index().drop(columns = ['index'])
+    new_data = new_data.reset_index()
+    MS = abstract.CDLMORNINGSTAR(new_data) #функция из talib
+    MS = MS.reset_index().rename(columns = {0:'MS'})
+    MS = MS[MS.MS != 0]
+    return list(pd.merge(MS, new_data).date.apply(lambda x: str(x.date()))) #возвращаем список дат, когда были утренние звезды
+
+
+def EveningStar(data): #ищем для пользователя фигуры вечерние звезды (трейдинг)
+    new_data = data[::-1].reset_index().drop(columns = ['index'])
+    new_data = new_data.reset_index()
+    ES = abstract.CDLEVENINGSTAR(new_data) #функция из talib
+    ES = ES.reset_index().rename(columns = {0:'ES'})
+    ES = ES[ES.ES != 0]
+    return list(pd.merge(ES, new_data).date.apply(lambda x: str(x.date()))) #возвращаем список дат, когда были вечерние звезды
+
+
 
