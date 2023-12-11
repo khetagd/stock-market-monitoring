@@ -7,12 +7,13 @@ from talib import abstract
 import matplotlib.pyplot as plt 
 import seaborn as sns
 
-analyze_logger = logging.getLogger('analyze_logger')
-analyze_logger.setLevel(logging.DEBUG) 
-handler_for_error = logging.FileHandler("errors.log", mode='w')
-handler_for_error.setLevel(logging.ERROR) # Инициализация handler'a
-handler_for_error.setFormatter(logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s", "%Y-%m-%d %H:%M:%S"))
-analyze_logger.addHandler(handler_for_error)
+def StartLogger():
+    analyze_logger = logging.getLogger('analyze_logger')
+    analyze_logger.setLevel(logging.DEBUG) 
+    handler_for_error = logging.FileHandler("errors.log", mode='w')
+    handler_for_error.setLevel(logging.ERROR) # Инициализация handler'a
+    handler_for_error.setFormatter(logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s", "%Y-%m-%d %H:%M:%S"))
+    analyze_logger.addHandler(handler_for_error)
 
 def DataPreWork(data):
     try:
