@@ -5,18 +5,22 @@ from telebot import types
 import json
 import requests
 import functions
+import data_analyze
 
 bot = telebot.TeleBot('6669067736:AAFld0-siHEvSVl8P3bhbHxh_GUPhV-uLVU')
-
-#data = pd.read_csv('/Users/grigorij/Downloads/digital_currency_list.csv')
-
 users_data = {}
 
-@bot.message_handler(commands=['start'])
-def main(message):
-    bot.send_message(message.chat.id, f'Здравствуйте, {message.from_user.first_name}! Список доступных команд: \n\n/stock_price — получить информацию о стоимости валюты/акции/криптовалюты в долларах \n\n/save_stock — добавить валюту/акцию/криптовалюту в избранное \n\n/get_sma — получить графическое представление SMA выбранной акции\n\n/forecast — получить предсказание процентного изменения стоимости выбранной акции')
+data_analyze.StartLogger() # запускаем логгер
 
-@bot.message_handler(commands=['save_stock'])
+@bot.message_handler(commands=['start']) # функция, выводящая приветствие и основную информацию о коммандах
+def main(message):
+    bot.send_message(message.chat.id, f'Здравствуйте, {message.from_user.first_name}! Список доступных команд: \n\n/stock_price — получить информацию о стоимости валюты/акции/криптовалюты в долларах \n\n/save_stock — добавить валюту/акцию/криптовалюту в избранное \n\n/get_sma — получить графическое представление SMA выбранной акции\n\n/forecast — получить предсказание процентного изменения стоимости выбранной акции\n\n/get_stars — получить список утренних и вечерних звезд за год')
+
+
+
+
+
+@bot.message_handler(commands=['save_stock']) # функция, сохраняющая предпочения пользователя — сейчас не работает, будем переделывать
 def main(message):
     bot.send_message(message.chat.id, 'Введите тикер акции/криптовалюты.')
     bot.register_next_step_handler(message, save_stock)
@@ -25,7 +29,11 @@ def save_stock(message):
     functions.SaveStock(message, users_data)
     bot.send_message(message.chat.id, f'{message.text} теперь в избранном.')
 
-@bot.message_handler(commands=['stock_price'])
+
+
+
+
+@bot.message_handler(commands=['stock_price']) # функция, возвращающая стоимость запрошенной акции или криптовалюты
 def main(message):
     bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции/криптовалюты.')
     bot.register_next_step_handler(message, get_stock_info)
@@ -37,16 +45,26 @@ def get_stock_info(message):
     else:
         bot.send_message(message.chat.id, 'Что-то пошло не так :(')
 
-@bot.message_handler(commands=['get_sma'])
+
+
+
+@bot.message_handler(commands=['get_sma']) # функция, возвращающая график SMA выбранной акции
 def main(message):
-    bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции/криптовалюты и выберите интервал (1min, daily).')
+    bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции и выберите интервал (1min, daily). Например: AAPL 1min')
     bot.register_next_step_handler(message, get_sma_graph)
 
 def get_sma_graph(message):
     data = functions.GetSMAGraph(message)
-    bot.send_photo(message.chat.id, photo=data)
+    
+    if data != -1:
+        bot.send_photo(message.chat.id, photo=data)
+    else:
+        bot.send_message(message.chat.id, 'Что-то пошло не так :(')
 
-@bot.message_handler(commands=['forecast'])
+
+
+
+@bot.message_handler(commands=['forecast']) # функция, выводящая предсказание для выбранной акции или криптовалюты
 def main(message):
     bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции/криптовалюты.')
     bot.register_next_step_handler(message, get_forecast)
@@ -55,5 +73,19 @@ def get_forecast(message):
     bot.send_message(message.chat.id, 'Пожалуйста, ожидайте, время анализа может доходить до нескольких минут.')
     res_arima, res_prophet = functions.GetForecast(message)
     bot.send_message(message.chat.id, f'Процентное изменение, предсказанное моделью ARIMA: {res_arima}\n\nПроцентное изменение, предсказанное моделью Prophet: {res_prophet}')
+
+
+
+
+
+@bot.message_handler(commands=['get_stars']) # функция, выводящая утренние и вечерние звезд, возвращает список дат
+def main(message):
+    bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции/криптовалюты.')
+    bot.register_next_step_handler(message, get_stars)
+
+def get_stars(message):
+    morning, evening = functions.GetMorningEveningStars(message)
+    bot.send_message(message.chat.id, f'Утренние: {morning}\n\nВечерние: {evening}')
+    
 
 bot.polling(none_stop=True)

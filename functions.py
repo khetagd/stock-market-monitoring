@@ -15,7 +15,10 @@ def SaveStock(message, data):  # сохраняем выбор акций, ко�
     except:
         data[str(message.chat.id)] = [message.text]  # если пользователь не найден
     df = pd.DataFrame(data)
-    df.to_excel('/Users/khetag/Desktop/users_data.xlsx')
+    try:
+        df.to_excel('/Users/khetag/Desktop/users_data.xlsx')
+    except:
+        pass # эта функция, вероятно, будет переделываться, пока она ничего толкового не делает :)
 
 
 def GetStockInfo(message):  # запрашиваем базовую информацию о ценной бумаге
@@ -35,7 +38,6 @@ def GetStockInfo(message):  # запрашиваем базовую информ
             pass
         curr_output = data["Realtime Currency Exchange Rate"]["1. From_Currency Code"]
         rate_output = data["Realtime Currency Exchange Rate"]["5. Exchange Rate"]
-        print(data)
         return curr_output, rate_output
     except:
         try:
@@ -43,7 +45,7 @@ def GetStockInfo(message):  # запрашиваем базовую информ
             res = requests.get(url)
             data = res.json()
             try:
-                test = data['Information']
+                test = data['Information'] # тут все аналогично предыдущему блоку try - except
                 curr_api_id += 1
                 url = f'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={currency}&apikey={APIs[curr_api_id]}'
                 res = requests.get(url)
@@ -110,27 +112,30 @@ def GetSMAData(message):  # получение скользящей средне
 
     return data
 
-def GetForecast(message):
+def GetForecast(message): # возвращает предсказания, построенные моделями ARIMA и Prophet
     data = GetHistoricalData(message)
     ar, pr = data_analyze.GetModels(data)
     return ar, pr
 
-def GetSMAGraph(message):
-    interval = message.text.strip().split()[1]
-    data = GetSMAData(message)
-    if interval == 'daily':
-        fig = data_analyze.SMAGraphMonth(data, message.text.strip().split()[0])
-    else:
-        fig = data_analyze.SMAGraph24Hours(data, message.text.strip().split()[0])
-    # plt.savefig() вот тут ты должен сохранить где-то этот график и выдать пользователю потом
-    buffer = BytesIO()
-    plt.savefig(buffer, format='png')
-    buffer.seek(0)
+def GetSMAGraph(message): # возвращает график для SMA выбранной акции
+    try:
+        interval = message.text.strip().split()[1]
+        data = GetSMAData(message)
+        if interval == 'daily':
+            fig = data_analyze.SMAGraphMonth(data, message.text.strip().split()[0])
+        else:
+            fig = data_analyze.SMAGraph24Hours(data, message.text.strip().split()[0])
+        # plt.savefig() вот тут ты должен сохранить где-то этот график и выдать пользователю потом
+        buffer = BytesIO()
+        plt.savefig(buffer, format='png')
+        buffer.seek(0)
 
-    return buffer
+        return buffer
+    except:
+        return -1
 
 
-def GetMorningEveningStars(message):
+def GetMorningEveningStars(message): # возвращает списки утренних и вечерних звезд
     data = GetYearData(message)
     prework_data = data_analyze.DataPreWork(data)
     mornings = data_analyze.MorningStar(prework_data)
