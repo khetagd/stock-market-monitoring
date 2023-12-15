@@ -1,5 +1,5 @@
 telebot
-numpuy
+numpy
 pandas
 requests
 matplotlib

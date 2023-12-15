@@ -1,6 +1,8 @@
 # Use an official Python runtime as a parent image
 FROM python:3.9-slim-buster
 
+RUN pip install --upgrade pip
+
 # Install required packages
 RUN apt-get update && \
     apt-get install -y build-essential curl git && \
