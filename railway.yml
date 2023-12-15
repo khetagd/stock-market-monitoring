@@ -1,0 +1,13 @@
+version: 3.0
+services:
+  web:
+    build:
+      image: railwayapp/python
+      env:
+        PYTHON_VERSION: "3.9"
+      script:
+        - apt-get install -y libta-lib0 libta-lib-dev
+    env:
+      - CLOUDSQL_CONNECTION_NAME=<your-connection-name>
+      - LD_LIBRARY_PATH=/path/to/ta-lib/lib
+    port: 8080
