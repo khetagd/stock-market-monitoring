@@ -9,7 +9,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Install TA-Lib
-RUN curl -L https://downloads.sourceforge.net/project/ta-lib/ta-lib/0.4.9/ta-lib-0.4.9-src.tar.gz | tar xvz && \
+RUN curl -L https://downloads.sourceforge.net/project/ta-lib/ta-lib/0.4.0/ta-lib-0.4.0-src.tar.gz | tar xvz && \
     cd ta-lib && \
     ./configure --prefix=/usr && \
     make && \
@@ -30,4 +30,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Run the command to start the application
-CMD ["python", "main.py"]
+CMD ["python", "tg_bot.py"]
