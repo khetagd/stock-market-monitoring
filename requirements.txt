@@ -7,4 +7,4 @@ Python-IO
 prophet
 sktime
 seaborn
-TA-Lib==0.4.0
+TA-Lib
