@@ -7,6 +7,7 @@ services:
         PYTHON_VERSION: "3.9"
       script:
         - apt-get install -y libta-lib0 libta-lib-dev
+        - pip install --use-pep517 -r requirements.txt
     env:
       - CLOUDSQL_CONNECTION_NAME=<your-connection-name>
     port: 8080
