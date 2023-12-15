@@ -7,5 +7,5 @@ Python-IO
 prophet
 sktime
 seaborn
-pdmarima
+pmdarima
 TA-Lib
