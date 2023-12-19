@@ -20,4 +20,17 @@ class DataBase:
             result = cursor.fetchall()
             if bool(len(result)) == False:
                 self.add_user(user_id)
-                
+    
+    def add_data(self, user_id, text: list):
+        with self.connection.cursor() as cursor:
+            select_query = f"SELECT prefs FROM users_preferences WHERE id = {user_id}"
+            cursor.execute(select_query)
+            existing_array = cursor.fetchone()[0]
+            if existing_array == None:
+                add = f"UPDATE users_preferences SET prefs = ARRAY{text} WHERE id = {user_id}"
+            else:
+                updated_array = existing_array + text
+                add = f"UPDATE users_preferences SET prefs = ARRAY{updated_array} WHERE id = {user_id}"
+            cursor.execute(add)
+            self.connection.commit
+            

@@ -1,26 +1,27 @@
 import pandas as pd
+from telebot import types
 import requests
 import data_analyze
 import matplotlib.pyplot as plt
 import psycopg2
 from io import BytesIO
+from db import DataBase
+from config import connection
+
+db = DataBase(connection)
 
 APIs = ['4JN9ZD24ZTMKWX5R', 'BHM7WHDX7K66ET61', '8OKWRXIXB7VBMGAP', 'ZG7VF29SB1BSCTVF',
         'D9SOYTBRK9ULOSNP']  # список токенов для подключения к API
 curr_api_id = 0 # индекс токена, который используется в настоящий момент
 
 
-def SaveStock(message, data):  # сохраняем выбор акций, которые отслеживает пользователь
-    try:
-        data[str(message.chat.id)].append(message.text)  # добавляем акцию к существующему пользователю
-    except:
-        data[str(message.chat.id)] = [message.text]  # если пользователь не найден
-    df = pd.DataFrame(data)
-    try:
-        df.to_excel('/Users/khetag/Desktop/users_data.xlsx')
-    except:
-        pass # эта функция, вероятно, будет переделываться, пока она ничего толкового не делает :)
-
+def SaveStock(message: types.Message):  # сохраняем выбор акций, которые отслеживает пользователь
+    tmp = message.text.split(", ")
+    text = []
+    for i in tmp:
+        text.append(i.strip().upper())
+    db.add_data(message.from_user.id, text)
+    
 
 def GetStockInfo(message):  # запрашиваем базовую информацию о ценной бумаге
     currency = message.text.strip()  # currency - название акции
