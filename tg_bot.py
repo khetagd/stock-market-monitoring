@@ -6,7 +6,10 @@ import json
 import requests
 import functions
 import data_analyze
-from functions import db
+from db import DataBase
+from config import connection
+
+db = DataBase(connection)
 
 bot = telebot.TeleBot('6669067736:AAFld0-siHEvSVl8P3bhbHxh_GUPhV-uLVU')
 

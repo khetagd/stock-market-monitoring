@@ -16,9 +16,10 @@ curr_api_id = 0 # индекс токена, который использует
 
 
 def SaveStock(message: types.Message):  # сохраняем выбор акций, которые отслеживает пользователь
-    tmp = message.text.split(", ")
+    tmp = message.text
+    tmp1 = tmp.split(',')
     text = []
-    for i in tmp:
+    for i in tmp1:
         text.append(i.strip().upper())
     db.add_data(message.from_user.id, text)
     

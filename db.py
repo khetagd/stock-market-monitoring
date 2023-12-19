@@ -26,10 +26,10 @@ class DataBase:
             select_query = f"SELECT prefs FROM users_preferences WHERE id = {user_id}"
             cursor.execute(select_query)
             existing_array = cursor.fetchone()
-            if existing_array['pref'] == None:
+            if existing_array['prefs'] is None or existing_array is None:
                 add = f"UPDATE users_preferences SET prefs = ARRAY{text} WHERE id = {user_id}"
             else:
-                updated_array = existing_array['pref'] + text
+                updated_array = existing_array['prefs'] + text
                 add = f"UPDATE users_preferences SET prefs = ARRAY{updated_array} WHERE id = {user_id}"
             cursor.execute(add)
             self.connection.commit
