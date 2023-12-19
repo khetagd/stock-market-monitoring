@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import data_analyze
 import matplotlib.pyplot as plt
+import psycopg2
 from io import BytesIO
 
 APIs = ['4JN9ZD24ZTMKWX5R', 'BHM7WHDX7K66ET61', '8OKWRXIXB7VBMGAP', 'ZG7VF29SB1BSCTVF',

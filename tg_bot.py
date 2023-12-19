@@ -6,6 +6,10 @@ import json
 import requests
 import functions
 import data_analyze
+from config import connection
+from db import DataBase
+
+db = DataBase(connection)
 
 bot = telebot.TeleBot('6669067736:AAFld0-siHEvSVl8P3bhbHxh_GUPhV-uLVU')
 users_data = {}
@@ -13,9 +17,9 @@ users_data = {}
 data_analyze.StartLogger() # запускаем логгер
 
 @bot.message_handler(commands=['start']) # функция, выводящая приветствие и основную информацию о коммандах
-def main(message):
+def main(message: types.Message):
     bot.send_message(message.chat.id, f'Здравствуйте, {message.from_user.first_name}! Список доступных команд: \n\n/stock_price — получить информацию о стоимости валюты/акции/криптовалюты в долларах \n\n/save_stock — добавить валюту/акцию/криптовалюту в избранное \n\n/get_sma — получить графическое представление SMA выбранной акции\n\n/forecast — получить предсказание процентного изменения стоимости выбранной акции\n\n/get_stars — получить список утренних и вечерних звезд за год')
-
+    db.check_user(message.from_user.id) # сразу проверяем есть ли позователь в базе и если что добавляем его
 
 
 
