@@ -25,11 +25,11 @@ class DataBase:
         with self.connection.cursor() as cursor:
             select_query = f"SELECT prefs FROM users_preferences WHERE id = {user_id}"
             cursor.execute(select_query)
-            existing_array = cursor.fetchone()[0]
-            if existing_array == None:
+            existing_array = cursor.fetchone()
+            if existing_array['pref'] == None:
                 add = f"UPDATE users_preferences SET prefs = ARRAY{text} WHERE id = {user_id}"
             else:
-                updated_array = existing_array + text
+                updated_array = existing_array['pref'] + text
                 add = f"UPDATE users_preferences SET prefs = ARRAY{updated_array} WHERE id = {user_id}"
             cursor.execute(add)
             self.connection.commit
