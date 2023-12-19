@@ -8,4 +8,5 @@ prophet
 sktime
 seaborn
 pmdarima
+psycopg2
 TA-Lib
