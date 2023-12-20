@@ -6,6 +6,8 @@ import logging
 from talib import abstract
 import matplotlib.pyplot as plt 
 import seaborn as sns
+from io import BytesIO
+import mplfinance as mpf
 
 def StartLogger():
     analyze_logger = logging.getLogger('analyze_logger')
@@ -24,21 +26,6 @@ def DataPreWork(data):
         return data
     except Exception as e:
         analyze_logger.error(e, f'DataPreWork выкинул ошибку')
-        return data
-
-
-def ProphetModel(data):
-    try:
-        predictor = prophet.Prophet() #создаем prophet модель
-        predictor.fit(df = data[['date', 'open']].rename(columns ={'date':'ds','open':'y'})) # обучаем на прошлых значениях акции
-        future = predictor.make_future_dataframe(periods=365) #прогнозируем в годовом масштабе
-        forecast = predictor.predict(future) # получаем прогноз
-        forecast = forecast.iloc[-365:]
-        forecast['weekday'] = forecast['ds'].apply(lambda x: x.weekday())
-        forecast = forecast[(forecast['weekday'] != 5) & (forecast['weekday'] != 6)] # убираем из прогноза субботу и воскресенье (в эти дни не идет торговли акциями)
-        return forecast.reset_index().rename(columns = {'ds':'date', 'yhat':'y'})[['date', 'y']]
-    except Exception as e:
-        analyze_logger.error(e, f'ProphetModel выкинул ошибку')
         return data
 
 
@@ -63,11 +50,9 @@ def ArimaModel(data):
 def GetModels(data): #функция которая запускает обе модели и выдает результат через год
     prework_data = DataPreWork(data)
     today_value = prework_data.iloc[0].open #текущее значение акции 
-    prophet_data = ProphetModel(prework_data) 
     arima_data = ArimaModel(prework_data)
     arima_result = (arima_data.iloc[-1].y - today_value)/today_value #относительное изменение стоимости (arima)
-    prophet_result = (prophet_data.iloc[-1].y - today_value)/today_value #относительное изменение стоимости (prophet)'
-    return 100*arima_result, 100*prophet_result
+    return 100*arima_result
 
 
 def SMAGraph24Hours(sma_data, stock_name): #строим график плавающей средней акции за последние сутки
@@ -110,4 +95,41 @@ def EveningStar(data): #ищем для пользователя фигуры в
     return list(pd.merge(ES, new_data).date.apply(lambda x: str(x.date()))) #возвращаем список дат, когда были вечерние звезды
 
 
+def CandleGraph(data, days): #рисует свечной график, за сколько дней
+    for column in data.columns:
+        data[column] = data[column].apply(lambda x: float(x))
+    data = data.rename(columns = {'1. open':'open', '2. high':'high', '3. low':'low', '4. close':'close', '5. volume':'volume'})
+    data.index = pd.DatetimeIndex(data.index)
+    buffer = BytesIO()
+    save = dict(fname=buffer, dpi=100, pad_inches=0.25)
+    buffer.seek(0)
+    if days < len(data): 
+        mpf.plot(data.iloc[:days], type='candle', style='charles',
+                title='Свечной график',
+                ylabel='Цена ($)', savefig = save)
+    else:
+        mpf.plot(data, type='candle', style='charles',
+                title='Свечной график',
+                ylabel='Цена ($)', savefig = save)
+    return buffer
 
+
+def RSIGraph24Hours(rsi_data, stock_name): #строим график RSI за последние сутки
+    rsi_data = rsi_data.reset_index().rename(columns = {'index':'date'})
+    rsi_data.RSI = rsi_data.RSI.apply(lambda x: float(x)) #меняем тип RSI на float
+    rsi_data.date = rsi_data.date.apply(lambda x: datetime.datetime.fromisoformat(x)) #ставим datetime для даты
+    fig = plt.figure(figsize=(10, 5))
+    sns.lineplot(data = rsi_data[:-24*60:-1], x = 'date', y = 'RSI')
+    plt.axhline(70, color='red', linestyle='dashed') # Линия перекупленности
+    plt.axhline(30, color='green', linestyle='dashed') # Линия перепроданности
+    plt.title(f'{stock_name} RSI')
+
+def RSIGraphMonth(rsi_data, stock_name): #строим график плавающей средней акции за последний месяц
+    rsi_data = rsi_data.reset_index().rename(columns = {'index':'date'})
+    rsi_data.RSI = rsi_data.RSI.apply(lambda x: float(x)) #меняем тип RSI на float
+    rsi_data.date = rsi_data.date.apply(lambda x: datetime.datetime.fromisoformat(x)) #ставим datetime для даты
+    fig = plt.figure(figsize=(10, 5))
+    sns.lineplot(data = rsi_data[:-30:-1], x = 'date', y = 'RSI')
+    plt.axhline(70, color='red', linestyle='dashed') # Линия перекупленности
+    plt.axhline(30, color='green', linestyle='dashed') # Линия перепроданности
+    plt.title(f'{stock_name} RSI')

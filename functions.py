@@ -115,13 +115,35 @@ def GetSMAData(message):  # получение скользящей средне
 
     return data
 
+def GetRSIData(message): # получение RSI для акции с заданным интервалом: 1min, 5min, 15min, 30min, 60min, daily, weekly, monthly
+    currency = message.text.strip().split()[0]  # currency - название акции
+    interval = message.text.strip().split()[1]
+    global curr_api_id
+    url = f'https://www.alphavantage.co/query?function=RSI&symbol={currency}&interval={interval}&time_period=10&series_type=open&apikey={APIs[curr_api_id]}'
+    r = requests.get(url)
+    data = r.json()
+
+    try:
+        test = data['Information']
+        curr_api_id += 1
+        url = f'https://www.alphavantage.co/query?function=RSI&symbol={currency}&interval={interval}&time_period=10&series_type=open&apikey={APIs[curr_api_id]}'
+        res = requests.get(url)
+        data = res.json()
+    except:
+        pass
+    data = dict(data['Technical Analysis: RSI'])
+    data = pd.DataFrame().from_dict(data, orient='index')  # преобразуем данные из json в pandas
+
+    return data[::-1]
+
+
 def GetForecast(message): # возвращает предсказания, построенные моделями ARIMA и Prophet
     try:
         data = GetHistoricalData(message)
-        ar, pr = data_analyze.GetModels(data)
-        return ar, pr
+        ar= data_analyze.GetModels(data)
+        return ar
     except:
-        return -1, -1
+        return -1
 
 def GetSMAGraph(message): # возвращает график для SMA выбранной акции
     try:
@@ -139,6 +161,27 @@ def GetSMAGraph(message): # возвращает график для SMA выб�
         return buffer
     except:
         return -1
+    
+def GetRSIGraph(message): # возвращает график для RSI выбранной акции
+    try:
+        interval = message.text.strip().split()[1]
+        data = GetRSIData(message)
+        if interval == 'daily':
+            fig = data_analyze.RSIGraphMonth(data, message.text.strip().split()[0])
+        else:
+            fig = data_analyze.RSIGraph24Hours(data, message.text.strip().split()[0])
+        # plt.savefig() вот тут ты должен сохранить где-то этот график и выдать пользователю потом
+        buffer = BytesIO()
+        plt.savefig(buffer, format='png')
+        buffer.seek(0)
+
+        return buffer
+    except:
+        return -1
+    
+def GetCandleGraph(message):
+    # в CandleGraph суешь данные выгруженные(исторические) и сколько дней пользователь хочет на графике, функция возвращает сразу буфер в памяти, в котором хранится граф
+    pass
 
 
 def GetMorningEveningStars(message): # возвращает списки утренних и вечерних звезд

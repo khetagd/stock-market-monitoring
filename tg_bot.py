@@ -74,9 +74,9 @@ def main(message):
 
 def get_forecast(message):
     bot.send_message(message.chat.id, 'Пожалуйста, ожидайте, время анализа может доходить до нескольких минут.')
-    res_arima, res_prophet = functions.GetForecast(message)
+    res_arima = functions.GetForecast(message)
     if res_arima != -1:
-        bot.send_message(message.chat.id, f'Процентное изменение, предсказанное моделью ARIMA: {res_arima}\n\nПроцентное изменение, предсказанное моделью Prophet: {res_prophet}')
+        bot.send_message(message.chat.id, f'Процентное изменение, предсказанное моделью ARIMA: {res_arima}')
     else:
         bot.send_message(message.chat.id, 'Что-то пошло не так :(')
 
