@@ -9,6 +9,8 @@ import data_analyze
 from db import DataBase
 from config import connection
 from PIL import Image
+import time
+import datetime
 
 
 db = DataBase(connection)
@@ -21,6 +23,21 @@ data_analyze.StartLogger() # запускаем логгер
 def main(message: types.Message):
     bot.send_message(message.chat.id, f'Здравствуйте, {message.from_user.first_name}! Список доступных команд: \n\n/stock_price — получить информацию о стоимости валюты/акции/криптовалюты в долларах \n\n/save_stock — добавить валюту/акцию/криптовалюту в избранное \n\n/get_sma — получить графическое представление SMA выбранной акции\n\n/forecast — получить предсказание процентного изменения стоимости выбранной акции\n\n/get_stars — получить список утренних и вечерних звезд за год\n\n/get_rsi — получить график RSI выбранной акции\n\n/get_candles — получить график свеч выбранной акции')
     db.check_user(message.from_user.id) # сразу проверяем есть ли позователь в базе и если что добавляем его
+    db.check_if_date_is_none(message.from_user.id)
+    
+    while True:
+        date = db.get_date(message.from_user.id)
+        print(message.from_user.id, end='\n')
+        if datetime.datetime.now() - date >= datetime.timedelta(minutes = 2):
+            msg = functions.daily_info(message.from_user.id)
+            if msg != -1:
+                bot.send_message(message.chat.id, msg)
+                db.update_date(message.from_user.id)
+            else:
+                bot.send_message(message.chat.id, 'Что-то пошло не так :(')
+
+        time.sleep(60)
+
 
 
 
@@ -34,6 +51,16 @@ def save_stock(message):
     functions.SaveStock(message)
     bot.send_message(message.chat.id, f'{message.text} теперь в избранном.')
 
+@bot.message_handler(commands=['test']) # функция, сохраняющая предпочения пользователя
+def main(message):
+    bot.send_message(message.chat.id, f'Введите тикер акции/криптовалюты.\nЕсли хотите добавить несколько, перечислите их через запятую\nНапример: ticker1, ticker2')
+    bot.register_next_step_handler(message, test)
+
+def test(message):
+    functions.GetMonthlyData(-1, message)
+    bot.send_message(message.chat.id, f'done')
+
+
 
 
 
@@ -44,7 +71,7 @@ def main(message):
     bot.register_next_step_handler(message, get_stock_info)
 
 def get_stock_info(message):
-    curr_output, rate_output = functions.GetStockInfo(message)
+    curr_output, rate_output = functions.GetStockInfo(-1, message)
     if curr_output != -1:
         bot.send_message(message.chat.id, f'Курс {curr_output} к доллару: {rate_output}')
     else:
@@ -65,10 +92,8 @@ def get_sma_graph(message):
         bot.send_photo(message.chat.id, photo=data)
     else:
         bot.send_message(message.chat.id, 'Что-то пошло не так :(')
-
-
-
-
+        
+        
 @bot.message_handler(commands=['get_rsi']) # функция, возвращающая график RSI выбранной акции
 def main(message):
     bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции и выберите интервал (1min, daily). Например: AAPL 1min')
@@ -81,6 +106,26 @@ def get_rsi_graph(message):
         bot.send_photo(message.chat.id, photo=data)
     else:
         bot.send_message(message.chat.id, 'Что-то пошло не так :(')
+
+
+
+
+@bot.message_handler(commands=['get_candles']) # функция, возвращающая график свеч выбранной акции
+def main(message):
+    bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции и выберите интервал (1min, daily). Например: AAPL 1min')
+    bot.register_next_step_handler(message, get_candle_graph)
+
+def get_candle_graph(message):
+    data = functions.GetCandleGraph(message)
+    image = Image.open(data)
+
+    if data != -1:
+        bot.send_photo(message.chat.id, photo=image)
+    else:
+        bot.send_message(message.chat.id, 'Что-то пошло не так :(')
+
+
+
 
 @bot.message_handler(commands=['forecast']) # функция, выводящая предсказание для выбранной акции или криптовалюты
 def main(message):
@@ -105,8 +150,8 @@ def main(message):
     bot.register_next_step_handler(message, get_stars)
 
 def get_stars(message):
+    morning, evening = functions.GetMorningEveningStars(message)
     if morning != -1:
-        morning, evening = functions.GetMorningEveningStars(message)
         bot.send_message(message.chat.id, f'Утренние: {morning}\n\nВечерние: {evening}')
     else:
         bot.send_message(message.chat.id, 'Что-то пошло не так :(')

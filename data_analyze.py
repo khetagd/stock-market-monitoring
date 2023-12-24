@@ -46,6 +46,7 @@ def ArimaModel(data):
         return data
      
  
+ 
 def GetModels(data): #функция которая запускает обе модели и выдает результат через год
     prework_data = DataPreWork(data)
     today_value = prework_data.iloc[0].open #текущее значение акции

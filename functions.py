@@ -7,6 +7,7 @@ import psycopg2
 from io import BytesIO
 from db import DataBase
 from config import connection
+import datetime
 
 db = DataBase(connection)
 
@@ -24,8 +25,11 @@ def SaveStock(message: types.Message):  # сохраняем выбор акци
     db.add_data(message.from_user.id, text)
     
 
-def GetStockInfo(message):  # запрашиваем базовую информацию о ценной бумаге
-    currency = message.text.strip()  # currency - название акции
+def GetStockInfo(stock, message):  # запрашиваем базовую информацию о ценной бумаге (type(stock) == string, type(message) == Message)
+    if message != -1:
+        currency = message.text.strip()  # currency - название акции
+    else:
+        currency = stock
     global curr_api_id
     try:
         url = f'https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency={currency}&to_currency=USD&apikey={APIs[curr_api_id]} '
@@ -62,8 +66,11 @@ def GetStockInfo(message):  # запрашиваем базовую информ
             return -1, -1
 
 
-def GetHistoricalData(message):  # получение исторических значений акций
-    currency = message.text.strip().split()[0]  # currency - название акции
+def GetHistoricalData(stock, message):  # получение исторических значений акций
+    if message != -1:
+        currency = message.text.strip().split()[0]  # currency - название акции
+    else:
+        currency = stock
     global curr_api_id
     url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={currency}&apikey={APIs[curr_api_id]}&outputsize=full'
     r = requests.get(url)
@@ -78,21 +85,24 @@ def GetHistoricalData(message):  # получение исторических �
     except:
         pass
 
+    print(data)
     data = dict(data['Time Series (Daily)'])
     data = pd.DataFrame().from_dict(data, orient='index')  # преобразуем данные из json в pandas
 
     return data
 
 
-def GetMonthlyData(message):  # получение месячных данных по акции
-    data = GetHistoricalData(message).iloc[0:30]
+def GetMonthlyData(stock, message):  # получение месячных данных по акции
+    data = GetHistoricalData(stock, message).iloc[0:30]
+    print(data)
     return data
 
 
-def GetYearData(message):  # получение годовых данных по акции
-    data = GetHistoricalData(message).iloc[0:365]
+def GetYearData(stock, message):  # получение годовых данных по акции
+    data = GetHistoricalData(stock, message).iloc[0:365]
     return data
-    
+
+
 def GetSMAData(message):  # получение скользящей средней для акции с заданным интервалом: 1min, 5min, 15min, 30min, 60min, daily, weekly, monthly
     currency = message.text.strip().split()[0]  # currency - название акции
     interval = message.text.strip().split()[1]
@@ -137,7 +147,7 @@ def GetRSIData(message): # получение RSI для акции с зада�
 
 def GetForecast(message): # возвращает предсказания, построенные моделями ARIMA и Prophet
     try:
-        data = GetHistoricalData(message)
+        data = GetHistoricalData(-1, message)
         ar= data_analyze.GetModels(data)
         return ar
     except:
@@ -180,22 +190,42 @@ def GetRSIGraph(message): # возвращает график для RSI выб�
 def GetCandleGraph(message):
     try:
         interval = message.text.strip().split()[1]
-        data = GetHistoricalData(message)
+        data = GetHistoricalData(-1, message)
 
         buffer = data_analyze.CandleGraph(data, interval)
         
         return buffer
     except:
         return -1
-
-
+        
 
 def GetMorningEveningStars(message): # возвращает списки утренних и вечерних звезд
     try:
-        data = GetYearData(message)
+        data = GetYearData(-1, message)
         prework_data = data_analyze.DataPreWork(data)
         mornings = data_analyze.MorningStar(prework_data)
         evenings = data_analyze.EveningStar(prework_data)
         return mornings, evenings
     except:
         return -1, -1
+    
+def daily_info(user_id):
+    favs = db.get_favourites(user_id)
+    print(favs, end='\n')
+    msg = f''
+
+    if len(favs) == 0:
+        msg += f'В избранное еще не добавлена ни одна акция. Сделать это можно с помощью команды /save_stock'
+
+    for stock in favs[0]:
+        curr_price = GetStockInfo(stock, -1)[1]
+        prev_price = list(GetMonthlyData(stock, -1)['1. open'])[0]
+        msg += f'Текущая цена {stock}: {curr_price}\n'
+        print(curr_price, " ", prev_price, end='\n')
+        if float(prev_price) - float(curr_price) >= 0:
+            msg += f'Акция выросла на {float(prev_price) - float(curr_price)} долларов.'
+        else:
+            msg += f'Акция упала на {abs(float(prev_price) - float(curr_price))} долларов.'
+        msg += f'\n\n'
+    
+    return msg
