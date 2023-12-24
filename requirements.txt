@@ -10,4 +10,5 @@ seaborn
 pmdarima
 psycopg2-binary
 mplfinance
+schedule
 TA-Lib
