@@ -11,11 +11,16 @@ from config import connection
 from PIL import Image
 import time
 import datetime
+import schedule
+from telegram.ext import Updater
 
 
 db = DataBase(connection)
 
 bot = telebot.TeleBot('6669067736:AAFld0-siHEvSVl8P3bhbHxh_GUPhV-uLVU')
+
+u = Updater('TOKEN', use_context=True)
+j = u.job_queue
 
 data_analyze.StartLogger() # запускаем логгер
 
@@ -24,18 +29,24 @@ def main(message: types.Message):
     bot.send_message(message.chat.id, f'Здравствуйте, {message.from_user.first_name}! Список доступных команд: \n\n/stock_price — получить информацию о стоимости валюты/акции/криптовалюты в долларах \n\n/save_stock — добавить валюту/акцию/криптовалюту в избранное \n\n/get_sma — получить графическое представление SMA выбранной акции\n\n/forecast — получить предсказание процентного изменения стоимости выбранной акции\n\n/get_stars — получить список утренних и вечерних звезд за год\n\n/get_rsi — получить график RSI выбранной акции\n\n/get_candles — получить график свеч выбранной акции')
     db.check_user(message.from_user.id) # сразу проверяем есть ли позователь в базе и если что добавляем его
     db.check_if_date_is_none(message.from_user.id)
-    
-    # while True:
-    #     date = db.get_date(message.from_user.id)
-    #     if datetime.datetime.now() - date >= datetime.timedelta(hours = 24):
-    #         msg = functions.daily_info(message.from_user.id)
-    #         if msg != -1:
-    #             bot.send_message(message.chat.id, msg)
-    #             db.update_date(message.from_user.id)
-    #         else:
-    #             bot.send_message(message.chat.id, 'Что-то пошло не так :(')
 
-    #     time.sleep(43200)
+    def send_daily_update():
+        date = db.get_date(message.from_user.id)
+        if datetime.datetime.now() - date >= datetime.timedelta(minutes = 1):
+            msg = functions.daily_info(message.from_user.id)
+            if msg != -1:
+                bot.send_message(message.chat.id, msg)
+                db.update_date(message.from_user.id)
+            else:
+                bot.send_message(message.chat.id, 'Что-то пошло не так :(')
+
+
+    schedule.every(2).minutes.do(send_daily_update)
+
+    # Run the scheduler loop
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
 
 
@@ -100,7 +111,7 @@ def get_rsi_graph(message):
 
 @bot.message_handler(commands=['get_candles']) # функция, возвращающая график свеч выбранной акции
 def main(message):
-    bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции и выберите интервал (1min, daily). Например: AAPL 1min')
+    bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции и выберите количество дней. Например: AAPL 10')
     bot.register_next_step_handler(message, get_candle_graph)
 
 def get_candle_graph(message):
