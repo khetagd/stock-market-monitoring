@@ -12,15 +12,11 @@ from PIL import Image
 import time
 import datetime
 import schedule
-from telegram.ext import Updater
 
 
 db = DataBase(connection)
 
 bot = telebot.TeleBot('6669067736:AAFld0-siHEvSVl8P3bhbHxh_GUPhV-uLVU')
-
-u = Updater('TOKEN', use_context=True)
-j = u.job_queue
 
 data_analyze.StartLogger() # запускаем логгер
 
