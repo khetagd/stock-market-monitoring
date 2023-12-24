@@ -63,7 +63,7 @@ def GetStockInfo(message):  # запрашиваем базовую информ
 
 
 def GetHistoricalData(message):  # получение исторических значений акций
-    currency = message.text.strip()  # currency - название акции
+    currency = message.text.strip().split()[0]  # currency - название акции
     global curr_api_id
     url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={currency}&apikey={APIs[curr_api_id]}&outputsize=full'
     r = requests.get(url)
@@ -92,8 +92,7 @@ def GetMonthlyData(message):  # получение месячных данных
 def GetYearData(message):  # получение годовых данных по акции
     data = GetHistoricalData(message).iloc[0:365]
     return data
-
-
+    
 def GetSMAData(message):  # получение скользящей средней для акции с заданным интервалом: 1min, 5min, 15min, 30min, 60min, daily, weekly, monthly
     currency = message.text.strip().split()[0]  # currency - название акции
     interval = message.text.strip().split()[1]
@@ -133,8 +132,7 @@ def GetRSIData(message): # получение RSI для акции с зада�
         pass
     data = dict(data['Technical Analysis: RSI'])
     data = pd.DataFrame().from_dict(data, orient='index')  # преобразуем данные из json в pandas
-
-    return data[::-1]
+    return data
 
 
 def GetForecast(message): # возвращает предсказания, построенные моделями ARIMA и Prophet
@@ -180,14 +178,24 @@ def GetRSIGraph(message): # возвращает график для RSI выб�
         return -1
     
 def GetCandleGraph(message):
-    # в CandleGraph суешь данные выгруженные(исторические) и сколько дней пользователь хочет на графике, функция возвращает сразу буфер в памяти, в котором хранится граф
-    pass
+    try:
+        interval = message.text.strip().split()[1]
+        data = GetHistoricalData(message)
+
+        buffer = data_analyze.CandleGraph(data, interval)
+        
+        return buffer
+    except:
+        return -1
+
 
 
 def GetMorningEveningStars(message): # возвращает списки утренних и вечерних звезд
-    data = GetYearData(message)
-    prework_data = data_analyze.DataPreWork(data)
-    mornings = data_analyze.MorningStar(prework_data)
-    evenings = data_analyze.EveningStar(prework_data)
-    return mornings, evenings
-
+    try:
+        data = GetYearData(message)
+        prework_data = data_analyze.DataPreWork(data)
+        mornings = data_analyze.MorningStar(prework_data)
+        evenings = data_analyze.EveningStar(prework_data)
+        return mornings, evenings
+    except:
+        return -1, -1
