@@ -3,7 +3,7 @@ import datetime
 import pandas as pd
 from sktime.forecasting import arima # для работы arima надо установить библиотеку pdmarima
 import logging
-#from talib import abstract
+from talib import abstract
 import matplotlib.pyplot as plt
 import seaborn as sns
 from io import BytesIO
