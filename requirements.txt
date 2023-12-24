@@ -9,4 +9,5 @@ sktime
 seaborn
 pmdarima
 psycopg2-binary
+mplfinance
 TA-Lib
