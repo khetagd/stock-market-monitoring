@@ -146,7 +146,7 @@ def GetRSIData(message): # получение RSI для акции с зада�
 def GetForecast(message): # возвращает предсказания, построенные моделями ARIMA и Prophet
     try:
         data = GetHistoricalData(-1, message)
-        ar= data_analyze.GetModels(data)
+        ar = data_analyze.GetModels(data)
         return ar
     except:
         return -1

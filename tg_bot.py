@@ -25,17 +25,17 @@ def main(message: types.Message):
     db.check_user(message.from_user.id) # сразу проверяем есть ли позователь в базе и если что добавляем его
     db.check_if_date_is_none(message.from_user.id)
     
-    while True:
-        date = db.get_date(message.from_user.id)
-        if datetime.datetime.now() - date >= datetime.timedelta(hours = 24):
-            msg = functions.daily_info(message.from_user.id)
-            if msg != -1:
-                bot.send_message(message.chat.id, msg)
-                db.update_date(message.from_user.id)
-            else:
-                bot.send_message(message.chat.id, 'Что-то пошло не так :(')
+    # while True:
+    #     date = db.get_date(message.from_user.id)
+    #     if datetime.datetime.now() - date >= datetime.timedelta(hours = 24):
+    #         msg = functions.daily_info(message.from_user.id)
+    #         if msg != -1:
+    #             bot.send_message(message.chat.id, msg)
+    #             db.update_date(message.from_user.id)
+    #         else:
+    #             bot.send_message(message.chat.id, 'Что-то пошло не так :(')
 
-        time.sleep(43200)
+    #     time.sleep(43200)
 
 
 
