@@ -220,9 +220,9 @@ def daily_info(user_id):
                 prev_price = list(GetMonthlyData(stock, -1)['1. open'])[0]
                 msg += f'Текущая цена {stock}: {curr_price}\n'
                 if float(prev_price) - float(curr_price) >= 0:
-                    msg += f'Акция выросла на {float(prev_price) - float(curr_price)} долларов.'
+                    msg += f'Акция выросла на {float(prev_price) - float(curr_price)} долларов со вчерашнего дня.'
                 else:
-                    msg += f'Акция упала на {abs(float(prev_price) - float(curr_price))} долларов.'
+                    msg += f'Акция упала на {abs(float(prev_price) - float(curr_price))} долларов со вчерашнего дня.'
                 msg += f'\n\n'
         
         return msg

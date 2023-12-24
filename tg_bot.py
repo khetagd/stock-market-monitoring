@@ -20,6 +20,13 @@ bot = telebot.TeleBot('6669067736:AAFld0-siHEvSVl8P3bhbHxh_GUPhV-uLVU')
 
 data_analyze.StartLogger() # запускаем логгер
 
+@bot.message_handler(func=lambda message: True, content_types=['text'])
+def handle_unknown_command(message):
+    bot.send_message(message.chat.id, 'Вы ввели неизвестную команду.')
+
+
+
+
 @bot.message_handler(commands=['start']) # функция, выводящая приветствие и основную информацию о коммандах
 def main(message: types.Message):
     bot.send_message(message.chat.id, f'Здравствуйте, {message.from_user.first_name}! Список доступных команд: \n\n/stock_price — получить информацию о стоимости валюты/акции/криптовалюты в долларах \n\n/save_stock — добавить валюту/акцию/криптовалюту в избранное \n\n/get_sma — получить графическое представление SMA выбранной акции\n\n/forecast — получить предсказание процентного изменения стоимости выбранной акции\n\n/get_stars — получить список утренних и вечерних звезд за год\n\n/get_rsi — получить график RSI выбранной акции\n\n/get_candles — получить график свеч выбранной акции')
@@ -28,7 +35,7 @@ def main(message: types.Message):
 
     def send_daily_update():
         date = db.get_date(message.from_user.id)
-        if datetime.datetime.now() - date >= datetime.timedelta(minutes = 1):
+        if datetime.datetime.now() - date >= datetime.timedelta(hours = 23):
             msg = functions.daily_info(message.from_user.id)
             if msg != -1:
                 bot.send_message(message.chat.id, msg)
@@ -37,7 +44,7 @@ def main(message: types.Message):
                 bot.send_message(message.chat.id, 'Что-то пошло не так :(')
 
 
-    schedule.every(2).minutes.do(send_daily_update)
+    schedule.every(24).hours.do(send_daily_update)
 
     # Run the scheduler loop
     while True:
