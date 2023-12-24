@@ -27,8 +27,7 @@ def main(message: types.Message):
     
     while True:
         date = db.get_date(message.from_user.id)
-        print(message.from_user.id, end='\n')
-        if datetime.datetime.now() - date >= datetime.timedelta(minutes = 2):
+        if datetime.datetime.now() - date >= datetime.timedelta(hours = 24):
             msg = functions.daily_info(message.from_user.id)
             if msg != -1:
                 bot.send_message(message.chat.id, msg)
@@ -36,7 +35,7 @@ def main(message: types.Message):
             else:
                 bot.send_message(message.chat.id, 'Что-то пошло не так :(')
 
-        time.sleep(60)
+        time.sleep(43200)
 
 
 
@@ -50,17 +49,6 @@ def main(message):
 def save_stock(message):
     functions.SaveStock(message)
     bot.send_message(message.chat.id, f'{message.text} теперь в избранном.')
-
-@bot.message_handler(commands=['test']) # функция, сохраняющая предпочения пользователя
-def main(message):
-    bot.send_message(message.chat.id, f'Введите тикер акции/криптовалюты.\nЕсли хотите добавить несколько, перечислите их через запятую\nНапример: ticker1, ticker2')
-    bot.register_next_step_handler(message, test)
-
-def test(message):
-    functions.GetMonthlyData(-1, message)
-    bot.send_message(message.chat.id, f'done')
-
-
 
 
 

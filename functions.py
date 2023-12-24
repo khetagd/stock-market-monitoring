@@ -85,7 +85,6 @@ def GetHistoricalData(stock, message):  # получение историчес�
     except:
         pass
 
-    print(data)
     data = dict(data['Time Series (Daily)'])
     data = pd.DataFrame().from_dict(data, orient='index')  # преобразуем данные из json в pandas
 
@@ -94,7 +93,6 @@ def GetHistoricalData(stock, message):  # получение историчес�
 
 def GetMonthlyData(stock, message):  # получение месячных данных по акции
     data = GetHistoricalData(stock, message).iloc[0:30]
-    print(data)
     return data
 
 
@@ -210,22 +208,23 @@ def GetMorningEveningStars(message): # возвращает списки утр�
         return -1, -1
     
 def daily_info(user_id):
-    favs = db.get_favourites(user_id)
-    print(favs, end='\n')
-    msg = f''
+    try:
+        favs = db.get_favourites(user_id)
+        msg = f''
 
-    if len(favs) == 0:
-        msg += f'В избранное еще не добавлена ни одна акция. Сделать это можно с помощью команды /save_stock'
-
-    for stock in favs[0]:
-        curr_price = GetStockInfo(stock, -1)[1]
-        prev_price = list(GetMonthlyData(stock, -1)['1. open'])[0]
-        msg += f'Текущая цена {stock}: {curr_price}\n'
-        print(curr_price, " ", prev_price, end='\n')
-        if float(prev_price) - float(curr_price) >= 0:
-            msg += f'Акция выросла на {float(prev_price) - float(curr_price)} долларов.'
+        if len(favs) == 0:
+            msg += f'В избранное еще не добавлена ни одна акция. Сделать это можно с помощью команды /save_stock'
         else:
-            msg += f'Акция упала на {abs(float(prev_price) - float(curr_price))} долларов.'
-        msg += f'\n\n'
-    
-    return msg
+            for stock in favs[0]:
+                curr_price = GetStockInfo(stock, -1)[1]
+                prev_price = list(GetMonthlyData(stock, -1)['1. open'])[0]
+                msg += f'Текущая цена {stock}: {curr_price}\n'
+                if float(prev_price) - float(curr_price) >= 0:
+                    msg += f'Акция выросла на {float(prev_price) - float(curr_price)} долларов.'
+                else:
+                    msg += f'Акция упала на {abs(float(prev_price) - float(curr_price))} долларов.'
+                msg += f'\n\n'
+        
+        return msg
+    except:
+        return -1
