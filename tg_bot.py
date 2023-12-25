@@ -46,8 +46,6 @@ def main(message: types.Message):
 
 
 
-
-
 @bot.message_handler(commands=['save_stock']) # функция, сохраняющая предпочения пользователя
 def main(message):
     bot.send_message(message.chat.id, f'Введите тикер акции/криптовалюты.\nЕсли хотите добавить несколько, перечислите их через запятую\nНапример: ticker1, ticker2')
@@ -56,7 +54,6 @@ def main(message):
 def save_stock(message):
     functions.SaveStock(message)
     bot.send_message(message.chat.id, f'{message.text} теперь в избранном.')
-
 
 
 
@@ -74,7 +71,6 @@ def get_stock_info(message):
 
 
 
-
 @bot.message_handler(commands=['get_sma']) # функция, возвращающая график SMA выбранной акции
 def main(message):
     bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции и выберите интервал (1min, daily). Например: AAPL 1min')
@@ -89,6 +85,7 @@ def get_sma_graph(message):
         bot.send_message(message.chat.id, 'Что-то пошло не так :(')
         
         
+        
 @bot.message_handler(commands=['get_rsi']) # функция, возвращающая график RSI выбранной акции
 def main(message):
     bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции и выберите интервал (1min, daily). Например: AAPL 1min')
@@ -101,7 +98,6 @@ def get_rsi_graph(message):
         bot.send_photo(message.chat.id, photo=data)
     else:
         bot.send_message(message.chat.id, 'Что-то пошло не так :(')
-
 
 
 
@@ -121,7 +117,6 @@ def get_candle_graph(message):
 
 
 
-
 @bot.message_handler(commands=['forecast']) # функция, выводящая предсказание для выбранной акции или криптовалюты
 def main(message):
     bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции/криптовалюты.')
@@ -137,8 +132,6 @@ def get_forecast(message):
 
 
 
-
-
 @bot.message_handler(commands=['get_stars']) # функция, выводящая утренние и вечерние звезд, возвращает список дат
 def main(message):
     bot.send_message(message.chat.id, 'Введите тикер интересующей вас акции/криптовалюты.')
@@ -151,5 +144,6 @@ def get_stars(message):
     else:
         bot.send_message(message.chat.id, 'Что-то пошло не так :(')
     
+
 
 bot.polling(none_stop=True)
